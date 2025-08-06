@@ -48,18 +48,20 @@
     const horn = document.getElementById('horn-sound');
 
     startButton.addEventListener('click', () => {
-      startButton.style.pointerEvents = 'none'; // evitar múltiples clicks
+      startButton.style.pointerEvents = 'none';
+
+      let played = false;
 
       horn.play().then(() => {
-        horn.addEventListener('ended', () => {
-          window.location.href = 'configuracion.html';
-        });
+        played = true;
       }).catch(err => {
-        console.error('Error al reproducir el sonido:', err);
-        setTimeout(() => {
-          window.open('configuracion.html', '_self');
-        }, 1000);
+        console.warn('No se pudo reproducir el sonido:', err);
       });
+
+      // Pase lo que pase, pasamos a configuración tras breve espera
+      setTimeout(() => {
+        window.location.href = 'configuracion.html';
+      }, played ? 1000 : 500);
     });
 
     // Botón para instalar PWA
@@ -91,8 +93,6 @@
   </script>
 </body>
 </html>
-
-
 
 
 

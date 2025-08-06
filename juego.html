@@ -220,6 +220,21 @@
     }
   </style>
 </head>
+<script>
+  const nombresCartas = [
+    'buena', 'mala', 'neutra', 'absurda', 'adulta'
+  ];
+  const imagenes = [];
+
+  for (let tipo of nombresCartas) {
+    for (let i = 1; i <= 6; i++) {
+      const img = new Image();
+      img.src = `cartas/${tipo}_${i}.png`;
+      imagenes.push(img);
+    }
+  }
+</script>
+
 <body>
     <script>
   if ('serviceWorker' in navigator) {
