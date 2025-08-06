@@ -7,6 +7,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Juego Tranvía</title>
   <style>
+    #parpadeo {
+  pointer-events: none;
+  z-index: 1;
+}
     html, body {
       margin: 0; padding: 0;
       height: 100vh; width: 100vw;
@@ -219,6 +223,7 @@
       object-fit: cover;
     }
   </style>
+  
 </head>
 <script>
   const nombresCartas = [
@@ -236,6 +241,7 @@
 </script>
 
 <body>
+  <div id="parpadeo"></div>
     <audio id="tren-sound" src="tren_sonido.mp3" preload="auto"></audio>
 <audio id="horn-sound" src="bocina.mp3" preload="auto"></audio>
 <script>
@@ -416,13 +422,13 @@
         tiempo--;
         temporizador.textContent = tiempo;
         if (tiempo === 10 && sonidoActivo) {
-          parpadeo.style.display = "block";
-          bocina.play().catch(() => {});
-        }
+  parpadeo.style.display = "block";
+  bocina.play().catch(() => {});
+}
         if (tiempo <= 0) {
-          clearInterval(intervalo);
-          mostrarPerdida();
-        }
+  clearInterval(intervalo);
+  mostrarPerdida();
+}
       }, 1000);
     }
 
