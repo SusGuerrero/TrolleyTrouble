@@ -236,6 +236,20 @@
 </script>
 
 <body>
+    <audio id="tren-sound" src="tren_sonido.mp3" preload="auto"></audio>
+<audio id="horn-sound" src="bocina.mp3" preload="auto"></audio>
+<script>
+  const tren = document.getElementById('tren-sound');
+  const horn = document.getElementById('horn-sound');
+
+  const desbloquearSonidos = () => {
+    tren.play().then(() => tren.pause()).catch(() => {});
+    horn.play().then(() => horn.pause()).catch(() => {});
+    document.removeEventListener('click', desbloquearSonidos);
+  };
+  document.addEventListener('click', desbloquearSonidos);
+</script>
+
     <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -343,7 +357,7 @@
       "Felicidades, ya no eres el protagonista",
       "Al menos lo hiciste con convicción",
       "Ese fue un giro oscuro",
-      "Esperaba algo mejor de ti... no mucho",
+      "Esperaba algo mejor de ti... aunque no mucho",
       "Las cartas te juzgan en silencio",
       "Nadie está a salvo de tus decisiones",
       "Tu ángel de la guarda se fue",
