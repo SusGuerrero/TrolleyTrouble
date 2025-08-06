@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ffffff">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Juego Tranvía</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0;
+      height: 100vh; width: 100vw;
+      background: url('fondo_vias.png') no-repeat center/contain;
+      background-color: #eaeaea;
+      font-family: sans-serif;
+      overflow: hidden;
+    }
+
+    #marco {
+      position: relative;
+      max-width: 480px;
+      height: 100vh;
+      margin: 0 auto;
+      width: 100vw;
+    }
+
+    #barra-superior {
+      position: absolute;
+      top: 20px;
+      left: 14px;
+      right: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 20;
+    }
+
+    #temporizador {
+      padding: 6px 14px;
+      font-weight: bold;
+      font-size: 22px;
+      background: rgba(0,0,0,0.65);
+      color: white;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(255,0,0,0.6);
+      user-select: none;
+      min-width: 60px;
+      text-align: center;
+      display: none;
+    }
+
+    #altavoz {
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    #altavoz svg {
+      width: 100%;
+      height: 100%;
+      fill: white;
+    }
+
+    #palanca {
+      position: absolute;
+      bottom: 18%;
+      left: 50%;
+      transform: translateX(-50%) rotate(0deg);
+      transform-origin: bottom center;
+      width: 50px;
+      height: 140px;
+      cursor: pointer;
+      user-select: none;
+      z-index: 15;
+      transition: transform 0.3s ease;
+    }
+
+    #palanca .mango {
+      width: 12px;
+      height: 90px;
+      background: #4d2c19;
+      margin: 0 auto;
+      border-radius: 6px;
+      position: relative;
+      border: 2px solid #2e1a0f;
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
+    }
+
+    #palanca .mango::before {
+      content: "";
+      position: absolute;
+      top: -28px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 34px;
+      height: 34px;
+      background: #5a1e1e;
+      border: 3px solid #3b0d0d;
+      border-radius: 50%;
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
+    }
+
+    #palanca .base {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 24px;
+      background: #444;
+      border-radius: 6px;
+      border: 2px solid #222;
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+    }
+
+    #confirmar {
+      position: absolute;
+      bottom: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      z-index: 25;
+      background-color: #8b1a1a;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .parpadeo {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(255,0,0,0.2);
+      animation: flash 0.6s ease-in-out infinite alternate;
+      display: none;
+      z-index: 30;
+    }
+
+    @keyframes flash {
+      0% { background-color: rgba(255,0,0,0.2); }
+      100% { background-color: rgba(255,0,0,0.05); }
+    }
+
+    #mensaje-perder,
+    #popup-final {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 28px;
+      font-weight: bold;
+      color: white;
+      display: none;
+      z-index: 50;
+      text-align: center;
+      background-color: rgba(0, 0, 0, 0.8);
+      padding: 28px 36px;
+      border-radius: 14px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+    }
+
+    #mensaje-perder button,
+    #popup-final button {
+      margin-top: 18px;
+      padding: 14px 32px;
+      font-size: 18px;
+      border-radius: 10px;
+      background-color: #8b1a1a;
+      border: none;
+      color: white;
+      cursor: pointer;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .via {
+      position: absolute;
+      width: 40%;
+      height: 180px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      top: 53%;
+      z-index: 1;
+    }
+
+    .via.via1 { left: 5%; }
+    .via.via2 { right: 5%; }
+
+    .carta {
+      width: 120px;
+      height: 160px;
+      border: 2px solid #333;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      margin-top: -140px;
+      position: absolute;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      user-select: none;
+      overflow: hidden;
+      transition: transform 0.8s ease, left 0.8s ease, top 0.8s ease;
+      background-color: white;
+    }
+
+    .carta img {
+      width: 100%;
+      height: 100%;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body>
+    <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(reg => console.log('Service Worker registrado', reg))
+        .catch(err => console.log('Error al registrar SW', err));
+    });
+  }
+</script>
+  <div id="marco">
+    <div id="barra-superior">
+      <div id="temporizador">55</div>
+      <div id="altavoz">
+        <svg viewBox="0 0 24 24">
+          <path d="M3 10v4h4l5 5V5l-5 5H3zm13.5 2a4.5 4.5 0 01-3 4.24v-8.48A4.5 4.5 0 0116.5 12z"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="parpadeo" id="parpadeo"></div>
+
+    <div id="palanca">
+      <div class="mango"></div>
+      <div class="base"></div>
+    </div>
+
+    <button id="confirmar">Confirmar</button>
+
+    <div id="mensaje-perder">
+      <p>Has perdido...</p>
+      <button id="boton-reintentar">Reintentar</button>
+    </div>
+
+    <div id="popup-final">
+      <p id="frase-final"></p>
+      <button onclick="location.reload()">Nueva partida</button>
+      <button onclick="location.href='configuracion.html'">Salir</button>
+    </div>
+
+    <div class="via via1" id="via1"></div>
+    <div class="via via2" id="via2"></div>
+  </div>
+
+  <script>
+    const frasesFinales = ["¿En serio? No te juzgo, pero...",
+      "Escuchamos Y Juzgamos",
+      "Karma",
+      "A tu madre no le gustaría",
+      "Demasiado tarde para arrepentirse",
+      "Solo Dios puede juzgarte... pero nosotros también lo haremos.",
+      "El botón decía “Confirmar”, no “Condenar”.",
+      "Alguien tenía que hacerlo... supongo.",
+      "¡Plot twist innecesario!",
+      "Esto irá directamente a tu expediente.",
+      "No lo negarás cuando te interroguen, ¿verdad?",
+      "Ni los filósofos antiguos justificarían esto.",
+      "Bien jugado. Mal, pero jugado.",
+      "¿Y si simplemente no hacías nada?",
+      "¡Tus terapeutas futuros te agradecerán esto!",
+      "Lo tuyo no es la moral, ¿eh?",
+      "No somos quién para decir nada... pero wow.",
+      "Otra alma al infierno. Siguiente.",
+      "¿Esto cuenta como libre albedrío?",
+      "Tu lado oscuro está tomando decisiones ahora.",
+      "Notamos cierta falta de remordimiento.",
+      "Esperábamos más de ti. Bueno, no realmente.",
+      "Alguien está disfrutando esto demasiado.",
+      "Tus padres estarían orgullosos. O no.",
+      "Casi eliges bien. Casi.",
+      "El tranvía aprueba tu sacrificio.",
+      "¿Te sientes poderoso? Porque deberías sentirte mal.",
+      "Esto fue personal, ¿verdad?",
+      "Lo que acaba de pasar... no se olvida.",
+      "Punto extra por originalidad moral cuestionable.",
+      "Al menos no fue al azar. ¿O sí?",
+      "Todos tenemos días malos... tú tienes rachas.",
+      "El universo toma nota.",
+      "En otra vida seguro eras villano.",
+      "Tu conciencia pidió vacaciones.",
+      "Modo Dios: Activado.",
+      "¿Y si el tranvía eras tú todo este tiempo?",
+      "Esa no era la respuesta correcta (spoiler: no había ninguna).",
+      "Un giro inesperado... al lado oscuro.",
+      "Jugaste con fuego y quemaste inocentes.",
+      "¿Este era tu plan desde el principio?",
+      "Siéntete libre de racionalizarlo.",
+      "Las cartas no lo merecían.",
+      "Ese camino no vuelve atrás.",
+      "La vía ha hablado. Y está decepcionada.",
+      "Bueno... al menos no fue aburrido.",
+      "Tranquilo, solo era una simulación. ¿O no?",
+      "Esto va a requerir una sesión de meditación.",
+      "Nadie salió ileso. Empezando por tu conciencia.",
+      "Elige sabiamente, decían. Ya es tarde.",
+      "Te vas directo al infierno del tranvía",
+      "Interesante elección... para un sociópata",
+      "Tu terapeuta oirá de esto",
+      "Ni Freud lo entendería",
+      "El tranvía también llora",
+      "Genial, acabas de romper la ética",
+      "Plot twist: tú eras el villano",
+      "¿Y si el tranvía te atropella a ti?",
+      "Moralidad desbloqueada: Inexistente",
+      "Oye, nadie dijo que eras buena persona",
+      "Felicidades, ya no eres el protagonista",
+      "Al menos lo hiciste con convicción",
+      "Ese fue un giro oscuro",
+      "Esperaba algo mejor de ti... no mucho",
+      "Las cartas te juzgan en silencio",
+      "Nadie está a salvo de tus decisiones",
+      "Tu ángel de la guarda se fue",
+      "Esa decisión fue tan mala que duele",
+      "Juez, jurado y ejecutor moral",
+      "No sabíamos que eras así...",
+      "Lo veremos en tu biopic criminal",
+      "¿Era esto parte de tu plan maestro?",
+      "100% cuestionable, 0% remordimiento",
+      "Ups... era tu tía abuela en la vía",
+      "Claramente necesitas dormir más",
+      "A este ritmo te contrata el villano",
+      "Wow. Simplemente... wow",
+      "No lo vimos venir. Ni queríamos",
+      "Un aplauso por la peor decisión del día",
+      "Google te busca por crímenes éticos",
+      "Tus cartas están decepcionadas",
+      "Eso fue legal, pero no moral",
+      "Una elección digna del Joker",
+      "Tienes el alma de un cactus seco",
+      "Mamá estaría orgullosa... quizás no",
+      "¿Estás bien? ¿Seguro?",
+      "El karma te alcanzará en 3... 2...",
+      "Elegiste la oscuridad. Con estilo",
+      "Eso... eso fue frío",
+      "El tren te lleva directo al juicio final",
+      "Tus nietos lo leerán en tus memorias",
+      "En otro universo, hiciste lo correcto",
+      "Si fueras político, tendrías futuro",
+      "Lo sentimos, se acabó tu prueba moral",
+      "No hay vuelta atrás, conductor oscuro"
+    ];
+    const config = JSON.parse(localStorage.getItem("configJuego") || "{}");
+    const usarCronometro = config.cronometro === true;
+    let tiempo = 55;
+    let intervalo = null;
+    let sonidoActivo = true;
+    let palancaEstado = 0;
+
+    const temporizador = document.getElementById("temporizador");
+    const parpadeo = document.getElementById("parpadeo");
+    const mensajePerder = document.getElementById("mensaje-perder");
+    const botonReintentar = document.getElementById("boton-reintentar");
+    const palanca = document.getElementById("palanca");
+    const confirmar = document.getElementById("confirmar");
+    const altavoz = document.getElementById("altavoz");
+
+    const tren_sonido = new Audio("tren_sonido.mp3");
+    tren_sonido.loop = !usarCronometro;
+    const bocina = new Audio("bocina.mp3");
+
+    function iniciarCronometro() {
+      if (!usarCronometro) return;
+      temporizador.textContent = tiempo;
+      intervalo = setInterval(() => {
+        tiempo--;
+        temporizador.textContent = tiempo;
+        if (tiempo === 10 && sonidoActivo) {
+          parpadeo.style.display = "block";
+          bocina.play().catch(() => {});
+        }
+        if (tiempo <= 0) {
+          clearInterval(intervalo);
+          mostrarPerdida();
+        }
+      }, 1000);
+    }
+
+    function mostrarPerdida() {
+      parpadeo.style.display = "none";
+      mensajePerder.style.display = "block";
+      tren_sonido.pause();
+    }
+
+    botonReintentar.onclick = () => location.reload();
+
+    altavoz.onclick = () => {
+      sonidoActivo = !sonidoActivo;
+      altavoz.querySelector("svg").style.fill = sonidoActivo ? "white" : "gray";
+      if (sonidoActivo) tren_sonido.play().catch(() => {});
+      else {
+        tren_sonido.pause();
+        bocina.pause();
+        bocina.currentTime = 0;
+      }
+    };
+
+    palanca.onclick = () => {
+      palancaEstado = palancaEstado <= 0 ? 1 : -1;
+      palanca.style.transform = `translateX(-50%) rotate(${palancaEstado * 20}deg)`;
+      confirmar.style.display = "block";
+    };
+
+    confirmar.onclick = () => {
+      confirmar.style.display = "none";
+      tren_sonido.pause();
+      clearInterval(intervalo);
+      parpadeo.style.display = "none";
+
+      const viaSeleccionada = palancaEstado > 0 ? "via2" : "via1";
+      const cartas = document.querySelectorAll(`#${viaSeleccionada} .carta`);
+      cartas.forEach((carta, i) => {
+        const angulo = Math.random() * 360;
+        const distancia = 300 + Math.random() * 300;
+        const x = Math.cos(angulo) * distancia;
+        const y = Math.sin(angulo) * distancia;
+        carta.style.transition = "transform 1s ease, left 1s ease, top 1s ease";
+        carta.style.left = `50%`;
+        carta.style.top = `50%`;
+        carta.style.transform = `translate(${x}px, ${y}px) rotate(${angulo}deg)`;
+        carta.style.zIndex = 40 + i;
+      });
+
+      setTimeout(() => {
+        const frase = frasesFinales[Math.floor(Math.random() * frasesFinales.length)];
+        document.getElementById("frase-final").textContent = frase;
+        document.getElementById("popup-final").style.display = "block";
+      }, 1000);
+    };
+
+    const cartasDisponibles = Array.from({ length: 6 }, (_, i) => i + 1).flatMap(num => [
+      `buena_${num}`,
+      `mala_${num}`,
+      `neutra_${num}`,
+      `absurda_${num}`,
+      `adulta_${num}`
+    ]);
+
+    const cartas = {
+      buenas: cartasDisponibles.filter(c => c.startsWith("buena")),
+      malas: cartasDisponibles.filter(c => c.startsWith("mala")),
+      otras: cartasDisponibles.filter(c => c.startsWith("neutra") || c.startsWith("absurda")),
+      adultas: cartasDisponibles.filter(c => c.startsWith("adulta"))
+    };
+
+    function obtenerCartasAleatorias(lista, cantidad, usadas) {
+      const disponibles = lista.filter(c => !usadas.has(c));
+      const seleccionadas = [];
+      while (disponibles.length && seleccionadas.length < cantidad) {
+        const index = Math.floor(Math.random() * disponibles.length);
+        const carta = disponibles.splice(index, 1)[0];
+        seleccionadas.push(carta);
+        usadas.add(carta);
+      }
+      return seleccionadas;
+    }
+
+    function generarCartasParaAmbasVias() {
+      const usadas = new Set();
+      const cantidad = (lista) => Math.min(lista.length, Math.floor(Math.random() * 3) + 1);
+      const generar = () => {
+        const b = config.buenas ?? cantidad(cartas.buenas);
+        const m = config.malas ?? cantidad(cartas.malas);
+        const o = config.otras ?? Math.floor(Math.random() * 3);
+        let baraja = [
+          ...obtenerCartasAleatorias(cartas.buenas, b, usadas),
+          ...obtenerCartasAleatorias(cartas.malas, m, usadas),
+          ...obtenerCartasAleatorias(cartas.otras, o, usadas)
+        ];
+        if (config.modo18) {
+          baraja.push(...obtenerCartasAleatorias(cartas.adultas, 1, usadas));
+        }
+        return baraja.sort(() => Math.random() - 0.5);
+      };
+      return [generar(), generar()];
+    }
+
+    function montarPila(viaId, cartasVia) {
+      const via = document.getElementById(viaId);
+      via.innerHTML = "";
+      cartasVia.forEach((nombre, i) => {
+        const div = document.createElement("div");
+        div.className = "carta";
+        div.style.top = `${i * 5}px`;
+        div.style.zIndex = i;
+        const img = document.createElement("img");
+        img.src = `cartas/${nombre}.png`;
+        img.alt = nombre;
+        div.appendChild(img);
+        via.appendChild(div);
+      });
+      via.onclick = () => {
+        const pila = Array.from(via.children);
+        if (pila.length > 1) {
+          const top = pila.pop();
+          via.insertBefore(top, via.firstChild);
+          Array.from(via.children).forEach((carta, j) => {
+            carta.style.top = `${j * 5}px`;
+            carta.style.zIndex = j;
+          });
+        }
+      };
+    }
+
+    window.onload = () => {
+      if (sonidoActivo) tren_sonido.play().catch(() => {});
+      if (usarCronometro) {
+        temporizador.style.display = "block";
+        iniciarCronometro();
+      } else {
+        temporizador.style.display = "none";
+      }
+
+      const [via1Cartas, via2Cartas] = generarCartasParaAmbasVias();
+      montarPila("via1", via1Cartas);
+      montarPila("via2", via2Cartas);
+    };
+  </script>
+</body>
+</html>

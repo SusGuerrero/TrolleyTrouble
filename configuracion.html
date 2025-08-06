@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Configuración – Trolley Trouble</title>
+  <style>
+    body {
+      background-color: #fff3e0;
+      font-family: 'Arial Rounded MT Bold', sans-serif;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .config-container {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      padding: 20px 30px;
+      max-width: 400px;
+      width: 100%;
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    h1 {
+      text-align: center;
+      color: #c0392b;
+      margin-bottom: 1rem;
+    }
+
+    label {
+      display: flex;
+      align-items: center;
+      margin: 12px 0;
+      font-size: 1rem;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    select {
+      flex: 1;
+      padding: 6px 8px;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+    }
+
+    button {
+      display: block;
+      width: 100%;
+      margin-top: 24px;
+      padding: 12px 0;
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #c0392b;
+    }
+
+    .popup {
+      position: absolute;
+      bottom: -60px;
+      left: 0;
+      right: 0;
+      background-color: #f8d7da;
+      color: #721c24;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      text-align: center;
+      display: none;
+      animation: fadein 0.3s ease-in-out;
+    }
+
+    @keyframes fadein {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="config-container">
+    <h1>Configuración</h1>
+
+    <label for="buenas">
+      Cartas buenas por vía:
+      <select id="buenas">
+        <option value="aleatorio" selected>Aleatorio</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+      </select>
+    </label>
+
+    <label for="malas">
+      Cartas malas por vía:
+      <select id="malas">
+        <option value="aleatorio" selected>Aleatorio</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+      </select>
+    </label>
+
+    <label for="otras">
+      Otras cartas por vía:
+      <select id="otras">
+        <option value="aleatorio" selected>Aleatorio</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+      </select>
+    </label>
+
+    <label>
+      <input type="checkbox" id="modo18" />
+      Activar modo +18
+    </label>
+
+    <label>
+      <input type="checkbox" id="cronometro" />
+      Activar cronómetro
+    </label>
+
+    <button onclick="empezarJuego()">¡Vamos!</button>
+    <div id="popupAdvertencia" class="popup">Máximo 5 cartas por vía.</div>
+  </div>
+
+  <script>
+    function getValorSeleccionado(id) {
+      const valor = document.getElementById(id).value;
+      if (valor === "aleatorio") return "aleatorio";
+      return parseInt(valor);
+    }
+
+    function mostrarPopupAdvertencia(mensaje) {
+      const popup = document.getElementById('popupAdvertencia');
+      popup.textContent = mensaje;
+      popup.style.display = 'block';
+      setTimeout(() => {
+        popup.style.display = 'none';
+      }, 3000);
+    }
+
+    function ajustarValoresAleatorios() {
+      // Generar una combinación aleatoria que sume entre 1 y 5 cartas
+      const totalCartas = Math.floor(Math.random() * 5) + 1;
+
+      let buenas = 0, malas = 0, otras = 0;
+      for (let i = 0; i < totalCartas; i++) {
+        const tipo = Math.floor(Math.random() * 3);
+        if (tipo === 0) buenas++;
+        else if (tipo === 1) malas++;
+        else otras++;
+      }
+
+      return { buenas, malas, otras };
+    }
+
+    function empezarJuego() {
+      let buenas = getValorSeleccionado('buenas');
+      let malas = getValorSeleccionado('malas');
+      let otras = getValorSeleccionado('otras');
+
+      const todosAleatorio = buenas === "aleatorio" && malas === "aleatorio" && otras === "aleatorio";
+
+      if (todosAleatorio) {
+        const valores = ajustarValoresAleatorios();
+        buenas = valores.buenas;
+        malas = valores.malas;
+        otras = valores.otras;
+      } else {
+        buenas = buenas === "aleatorio" ? Math.floor(Math.random() * 3) + 1 : buenas;
+        malas = malas === "aleatorio" ? Math.floor(Math.random() * 3) + 1 : malas;
+        otras = otras === "aleatorio" ? Math.floor(Math.random() * 3) + 1 : otras;
+
+        if (buenas + malas + otras > 5) {
+          mostrarPopupAdvertencia("Máximo 5 cartas por vía.");
+          return;
+        }
+      }
+
+      const config = {
+        buenas,
+        malas,
+        otras,
+        modo18: document.getElementById('modo18').checked,
+        cronometro: document.getElementById('cronometro').checked
+      };
+
+      localStorage.setItem("configJuego", JSON.stringify(config));
+      window.location.href = "juego.html";
+    }
+  </script>
+
+</body>
+</html>

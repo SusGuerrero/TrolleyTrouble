@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trolley Trouble</title>
+
+  <!-- Icono e instalación -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="icon" href="icono-192.png" type="image/png" />
+
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    #start-button {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      cursor: pointer;
+    }
+
+    #installBtn {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #222;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      display: none;
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body>
+  <audio id="horn-sound" src="bocina.mp3" preload="auto"></audio>
+
+  <div id="start-button"></div>
+  <button id="installBtn">Instalar juego</button>
+
+  <script>
+    const startButton = document.getElementById('start-button');
+    const horn = document.getElementById('horn-sound');
+
+    startButton.addEventListener('click', () => {
+      startButton.style.pointerEvents = 'none'; // evitar múltiples clicks
+
+      horn.play().then(() => {
+        horn.addEventListener('ended', () => {
+          window.location.href = 'configuracion.html';
+        });
+      }).catch(err => {
+        console.error('Error al reproducir el sonido:', err);
+        setTimeout(() => {
+          window.open('configuracion.html', '_self');
+        }, 1000);
+      });
+    });
+
+    // Botón para instalar PWA
+    let deferredPrompt;
+    const installBtn = document.getElementById('installBtn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBtn.style.display = 'block';
+
+      installBtn.addEventListener('click', () => {
+        installBtn.style.display = 'none';
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          deferredPrompt = null;
+        });
+      });
+    });
+
+    // Registrar service worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(reg => console.log('Service Worker registrado:', reg))
+          .catch(err => console.error('Error al registrar Service Worker:', err));
+      });
+    }
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
