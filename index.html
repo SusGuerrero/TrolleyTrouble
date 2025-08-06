@@ -39,6 +39,7 @@
 </head>
 <body>
   <audio id="horn-sound" src="bocina.mp3" preload="auto"></audio>
+  <audio id="tren-sound" src="tren_sonido.mp3" preload="auto"></audio>
 
   <div id="start-button"></div>
   <button id="installBtn">Instalar juego</button>
@@ -46,6 +47,15 @@
   <script>
     const startButton = document.getElementById('start-button');
     const horn = document.getElementById('horn-sound');
+    const tren = document.getElementById('tren-sound');
+
+    // 🔊 Desbloquear sonidos en móviles al primer toque
+    const desbloquearSonidos = () => {
+      horn.play().then(() => horn.pause()).catch(() => {});
+      tren.play().then(() => tren.pause()).catch(() => {});
+      document.removeEventListener('click', desbloquearSonidos);
+    };
+    document.addEventListener('click', desbloquearSonidos);
 
     startButton.addEventListener('click', () => {
       startButton.style.pointerEvents = 'none';
@@ -58,7 +68,6 @@
         console.warn('No se pudo reproducir el sonido:', err);
       });
 
-      // Pase lo que pase, pasamos a configuración tras breve espera
       setTimeout(() => {
         window.location.href = 'configuracion.html';
       }, played ? 1000 : 500);
@@ -93,8 +102,6 @@
   </script>
 </body>
 </html>
-
-
 
 
 
