@@ -434,6 +434,12 @@
     const altavoz = document.getElementById("altavoz");
 
     const tren_sonido = new Audio("tren_sonido.mp3");
+tren_sonido.loop = !usarCronometro;
+
+document.body.addEventListener('click', () => {
+  tren_sonido.play().catch(() => {});
+}, { once: true });
+
     tren_sonido.loop = !usarCronometro;
     const bocina = new Audio("bocina.mp3");
 
@@ -443,13 +449,19 @@
   intervalo = setInterval(() => {
     tiempo--;
     temporizador.textContent = tiempo;
-    if (tiempo === 10 && sonidoActivo) {
+
+    // Activar parpadeo rojo desde 10 segundos hasta 0
+    if (tiempo <= 10 && tiempo > 0) {
       parpadeo.style.display = "block";
-      bocina.play().catch(() => {});
+      if (tiempo === 10 && sonidoActivo) {
+        bocina.play().catch(() => {});
+      }
     }
+
+    // Tiempo agotado
     if (tiempo <= 0) {
       clearInterval(intervalo);
-      parpadeo.style.display = "none";
+      parpadeo.style.display = "none"; // Oculta parpadeo al terminar
       mostrarPerdida();
     }
   }, 1000);

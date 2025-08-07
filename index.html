@@ -58,20 +58,18 @@
     document.addEventListener('click', desbloquearSonidos);
 
     startButton.addEventListener('click', () => {
-      startButton.style.pointerEvents = 'none';
+  startButton.style.pointerEvents = 'none';
 
-      let played = false;
-
-      horn.play().then(() => {
-        played = true;
-      }).catch(err => {
-        console.warn('No se pudo reproducir el sonido:', err);
-      });
-
-      setTimeout(() => {
-        window.location.href = 'configuracion.html';
-      }, played ? 1000 : 500);
-    });
+  horn.currentTime = 0;
+  horn.play().then(() => {
+    horn.onended = () => {
+      window.location.href = 'configuracion.html';
+    };
+  }).catch(err => {
+    console.warn('No se pudo reproducir el sonido:', err);
+    window.location.href = 'configuracion.html'; // Redirige aunque falle
+  });
+});
 
     // Botón para instalar PWA
     let deferredPrompt;
